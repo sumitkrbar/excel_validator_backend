@@ -37,10 +37,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
-        if (repo.existsByEmail(request.getEmail())) {
+        if (repo.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Email already registered"));
         }
+
 
         User user = new User();
         user.setName(request.getName());

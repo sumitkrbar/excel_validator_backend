@@ -26,7 +26,7 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
 
-        ValidationResponse response = ExcelValidationService.validateExcelFile(file);
+        ValidationResponse response = service.validateExcelFile(file);
 
         return ResponseEntity.ok(response);
     }
