@@ -5,6 +5,7 @@ import com.sumit.excelvalidator.dto.StructureInfo;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class ExcelHighlighter {
 
     private static final Map<String, String> FIELD_TO_HEADER = Map.of(
@@ -25,7 +27,7 @@ public class ExcelHighlighter {
             "isFamilyRelated", "is Family Related"
     );
 
-    public static void highlightErrors(
+    public void highlightErrors(
             Workbook workbook,
             List<CellError> errors,
             StructureInfo info

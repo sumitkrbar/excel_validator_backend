@@ -16,7 +16,7 @@ import java.util.List;
 @Component
 public class ExcelProcessor {
 
-    public static ExcelProcessorResult processWorkbook(Workbook workbook) {
+    public ExcelProcessorResult processWorkbook(Workbook workbook) {
         try{
             Sheet sheet = workbook.getSheetAt(0);
             StructureInfo structureInfo = ColumnValidator.validateColumns(sheet);

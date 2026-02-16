@@ -2,12 +2,14 @@ package com.sumit.excelvalidator.validator;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 // Utility class to validate and parse Excel files
+@Component
 public class ExcelFileValidator {
 
-    public static Workbook getValidatedWorkbook(MultipartFile file) {
+    public Workbook getValidatedWorkbook(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");

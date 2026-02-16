@@ -31,27 +31,36 @@ public class ExcelValidationService {
     private final UserRepository userRepository;
     private final UploadedFileRepository uploadedFileRepository;
     private final ExcelRecordRepository excelRecordRepository;
+    private final ExcelFileValidator excelFileValidator;
+    private final ExcelProcessor excelProcessor;
+    private final ExcelHighlighter excelHighlighter;
 
     public ExcelValidationService(
             UserRepository userRepository,
             UploadedFileRepository uploadedFileRepository,
-            ExcelRecordRepository excelRecordRepository
+            ExcelRecordRepository excelRecordRepository,
+            ExcelFileValidator excelFileValidator,
+            ExcelProcessor excelProcessor,
+            ExcelHighlighter excelHighlighter
     ) {
         this.userRepository = userRepository;
         this.uploadedFileRepository = uploadedFileRepository;
         this.excelRecordRepository = excelRecordRepository;
+        this.excelFileValidator = excelFileValidator;
+        this.excelProcessor = excelProcessor;
+        this.excelHighlighter = excelHighlighter;
     }
 
     public ValidationResponse validateExcelFile(MultipartFile file) {
 
-        try (Workbook workbook = ExcelFileValidator.getValidatedWorkbook(file)) {
+        try (Workbook workbook = excelFileValidator.getValidatedWorkbook(file)) {
 
-            ExcelProcessorResult excelProcessorResult = ExcelProcessor.processWorkbook(workbook);
+            ExcelProcessorResult excelProcessorResult = excelProcessor.processWorkbook(workbook);
 
-            //If errors exist → highlight + return file
+            //If errors exist >>> highlight + return file
             if (!excelProcessorResult.getErrors().isEmpty()) {
 
-                ExcelHighlighter.highlightErrors(
+                excelHighlighter.highlightErrors(
                         workbook,
                         excelProcessorResult.getErrors(),
                         excelProcessorResult.getStructureInfo()
@@ -67,7 +76,7 @@ public class ExcelValidationService {
                         .build();
             }
             System.out.println("hey there no errors");
-            // If no errors → save to DB
+            // If no errors >> save to DB
             List<RowData> validRows = excelProcessorResult.getRecords();
             saveToDatabase(validRows, file);
 
@@ -83,7 +92,7 @@ public class ExcelValidationService {
 
     private void saveToDatabase(List<RowData> rows, MultipartFile file) {
 
-        // 1️⃣ Get logged-in user
+        // Get logged-in user
         String email = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -92,7 +101,7 @@ public class ExcelValidationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2️⃣ Save UploadedFile first
+        //Save UploadedFile first
         UploadedFile uploadedFile = UploadedFile.builder()
                 .fileName(file.getOriginalFilename())
                 .uploadedAt(LocalDateTime.now())
@@ -101,7 +110,7 @@ public class ExcelValidationService {
 
         uploadedFile = uploadedFileRepository.save(uploadedFile);
 
-        // 3️⃣ Convert RowData → ExcelRecord
+        //Convert RowData -> ExcelRecord
         UploadedFile finalUploadedFile = uploadedFile;
         List<ExcelRecord> records = rows.stream()
                 .map(row -> ExcelRecord.builder()
@@ -116,7 +125,7 @@ public class ExcelValidationService {
                         .build())
                 .toList();
 
-        // 4️⃣ Batch Insert
+        //Batch Insert
         excelRecordRepository.saveAll(records);
     }
 
