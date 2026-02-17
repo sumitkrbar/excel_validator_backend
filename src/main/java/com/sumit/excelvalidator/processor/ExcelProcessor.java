@@ -17,13 +17,13 @@ import java.util.List;
 public class ExcelProcessor {
 
     public ExcelProcessorResult processWorkbook(Workbook workbook) {
-        try{
+        try {
             Sheet sheet = workbook.getSheetAt(0);
+
+            // ✅ ColumnValidator.validateColumns() already throws IllegalArgumentException
+            // if headerRowIndex == -1, so no need to check again
             StructureInfo structureInfo = ColumnValidator.validateColumns(sheet);
 
-            if(structureInfo.getHeaderRowIndex()==-1){
-                throw new RuntimeException("Required Columns not found in the sheet");
-            }
             ExcelReader reader = new ExcelReader();
             List<RowData> records = reader.read(sheet, structureInfo);
 
@@ -32,8 +32,12 @@ public class ExcelProcessor {
 
             return new ExcelProcessorResult(records, errors, structureInfo);
 
+        } catch (IllegalArgumentException e) {
+            // ✅ Re-throw IllegalArgumentException as-is
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Error processing workbook: " + e.getMessage());
+            // ✅ Provide better error context
+            throw new RuntimeException("Error processing workbook: " + e.getMessage(), e);
         }
     }
 }

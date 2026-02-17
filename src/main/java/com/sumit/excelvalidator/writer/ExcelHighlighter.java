@@ -50,7 +50,23 @@ public class ExcelHighlighter {
 
             int rowIndex = error.getRow();
             String header = FIELD_TO_HEADER.get(error.getField());
-            int colIndex = colMap.get(header);
+
+            // ✅ Add null safety check
+            if (header == null) {
+                throw new IllegalArgumentException(
+                    "Unknown field: '" + error.getField() + "'. Valid fields are: " + FIELD_TO_HEADER.keySet()
+                );
+            }
+
+            Integer colIndexObj = colMap.get(header);
+            if (colIndexObj == null) {
+                throw new IllegalArgumentException(
+                    "Column '" + header + "' not found in Excel file. " +
+                    "Available columns: " + colMap.keySet()
+                );
+            }
+
+            int colIndex = colIndexObj;
 
             Row row = sheet.getRow(rowIndex);
             if (row == null) continue;

@@ -41,8 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        System.out.println("hereee");
-        try{
+
+        try {
             String token = authHeader.substring(7);
             String username = jwtService.extractUsername(token);
 
@@ -64,14 +64,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
+            filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token has expired");
+            return;  // ✅ Return early to prevent filter chain continuation
         } catch (MalformedJwtException e) {
             sendErrorResponse(response, HttpStatus.BAD_REQUEST, "Invalid token format");
+            return;  // ✅ Return early to prevent filter chain continuation
+        } catch (Exception e) {
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid JWT token: " + e.getMessage());
+            return;  // ✅ Return early to prevent filter chain continuation
         }
-        filterChain.doFilter(request, response);
-
 
 
     }

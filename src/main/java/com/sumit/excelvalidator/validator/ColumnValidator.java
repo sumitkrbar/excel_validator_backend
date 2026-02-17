@@ -35,7 +35,10 @@ public class ColumnValidator {
         }
 
         if(headerRowIndex == -1){
-            throw new RuntimeException("Required Columns not found in the sheet");
+            throw new IllegalArgumentException(
+                "Required columns not found in the Excel file. " +
+                "Expected headers: " + EXPECTED_HEADERS
+            );
         }
         return new StructureInfo(headerRowIndex, columnMap);
     }

@@ -75,7 +75,7 @@ public class ExcelValidationService {
                         .fileBytes(out.toByteArray())
                         .build();
             }
-            System.out.println("hey there no errors");
+
             // If no errors >> save to DB
             List<RowData> validRows = excelProcessorResult.getRecords();
             saveToDatabase(validRows, file);
@@ -85,8 +85,13 @@ public class ExcelValidationService {
                     .message("File validated and data saved successfully")
                     .build();
 
+        } catch (IllegalArgumentException e) {
+            // ✅ Re-throw IllegalArgumentException to be caught by GlobalExceptionHandler
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Validation failed: " + e.getMessage());
+            // ✅ Log the full exception for debugging
+            e.printStackTrace();
+            throw new RuntimeException("Validation failed: " + e.getMessage(), e);
         }
     }
 
