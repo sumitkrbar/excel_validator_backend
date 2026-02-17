@@ -64,14 +64,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            filterChain.doFilter(request, response);
+
         } catch (ExpiredJwtException e) {
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token has expired");
         } catch (MalformedJwtException e) {
             sendErrorResponse(response, HttpStatus.BAD_REQUEST, "Invalid token format");
-        } catch (Exception e) {
-            sendErrorResponse(response, HttpStatus.INTERNAL_SERVER_ERROR, "Authentication error");
         }
+        filterChain.doFilter(request, response);
 
 
 
