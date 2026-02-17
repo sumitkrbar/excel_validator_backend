@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 // Utility class to validate and parse Excel files
 @Component
 public class ExcelFileValidator {
+    private static final String SHEET_ONE = "Participant upload data";
+    private static final String SHEET_TWO = "Instructions";
 
     public Workbook getValidatedWorkbook(MultipartFile file) {
 
@@ -22,8 +24,26 @@ public class ExcelFileValidator {
         }
 
         try {
-            return WorkbookFactory.create(file.getInputStream());
-        } catch (Exception e) {
+            Workbook workbook = WorkbookFactory.create(file.getInputStream());
+            if (workbook.getNumberOfSheets() != 2) {
+                throw new IllegalArgumentException(
+                        "File must contain exactly 2 sheets. Found: " + workbook.getNumberOfSheets()
+                );
+            }
+            boolean hasSheetOne = workbook.getSheet(SHEET_ONE) != null;
+            boolean hasSheetTwo = workbook.getSheet(SHEET_TWO) != null;
+
+            if (!hasSheetOne || !hasSheetTwo) {
+                throw new IllegalArgumentException(
+                        "File must contain sheets named '" + SHEET_ONE + "' and '" + SHEET_TWO + "'."
+                );
+            }
+
+            return workbook;
+        }catch (IllegalArgumentException e){
+            throw e;
+        }catch (Exception e) {
+            System.out.println( "hey " + e.getMessage());
             throw new IllegalArgumentException("Uploaded file is not a valid Excel file");
         }
     }

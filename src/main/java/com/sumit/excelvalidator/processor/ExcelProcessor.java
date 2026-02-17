@@ -20,8 +20,6 @@ public class ExcelProcessor {
         try {
             Sheet sheet = workbook.getSheetAt(0);
 
-            // ✅ ColumnValidator.validateColumns() already throws IllegalArgumentException
-            // if headerRowIndex == -1, so no need to check again
             StructureInfo structureInfo = ColumnValidator.validateColumns(sheet);
 
             ExcelReader reader = new ExcelReader();
@@ -33,10 +31,8 @@ public class ExcelProcessor {
             return new ExcelProcessorResult(records, errors, structureInfo);
 
         } catch (IllegalArgumentException e) {
-            // ✅ Re-throw IllegalArgumentException as-is
             throw e;
         } catch (Exception e) {
-            // ✅ Provide better error context
             throw new RuntimeException("Error processing workbook: " + e.getMessage(), e);
         }
     }
