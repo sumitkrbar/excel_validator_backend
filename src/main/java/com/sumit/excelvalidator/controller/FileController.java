@@ -2,6 +2,8 @@ package com.sumit.excelvalidator.controller;
 
 import com.sumit.excelvalidator.dto.ValidationResponse;
 import com.sumit.excelvalidator.service.ExcelValidationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api")
 public class FileController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 
     @Autowired
     private ExcelValidationService service;
@@ -25,6 +29,8 @@ public class FileController {
 
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
+        logger.info("File upload request received: filename={}, size={} bytes",
+                    file.getOriginalFilename(), file.getSize());
 
         ValidationResponse response = service.validateExcelFile(file);
 

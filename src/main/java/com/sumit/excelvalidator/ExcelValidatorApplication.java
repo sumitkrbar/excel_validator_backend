@@ -8,6 +8,6 @@ public class ExcelValidatorApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(ExcelValidatorApplication.class, args);
-        System.out.println("Application has started");
+        System.out.println("Application started successfully.");
     }
 }
