@@ -16,14 +16,25 @@ public class JwtService {
     @Value("${app.jwt.secret}")
     private String secretKey;
 
-    @Value("${app.jwt.expiration:3600000}")
-    private long jwtExpirationMs;
+    @Value("${app.jwt.access-token.expiration:900000}")
+    private long accessTokenExpirationMs;
 
-    public String generateToken(String email) {
+    @Value("${app.jwt.refresh-token.expiration:604800000}")
+    private long refreshTokenExpirationMs;
+
+    public String generateAccessToken(String email) {
+        return buildToken(email, accessTokenExpirationMs);
+    }
+
+    public String generateRefreshToken(String email) {
+        return buildToken(email, refreshTokenExpirationMs);
+    }
+
+    private String buildToken(String email, long expirationMs) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -35,6 +46,24 @@ public class JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    public boolean isAccessTokenValid(String token) {
+        try {
+            extractAllClaims(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isRefreshTokenValid(String token) {
+        try {
+            extractAllClaims(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {

@@ -50,14 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             String username = jwtService.extractUsername(token);
 
-            logger.debug("JWT token extracted for user: {}", username);
+            logger.debug("JWT access token extracted for user: {}", username);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                if (jwtService.isTokenValid(token, userDetails)) {
-                    logger.info("JWT token validated successfully for user: {}", username);
+                if (jwtService.isAccessTokenValid(token) && jwtService.isTokenValid(token, userDetails)) {
+                    logger.info("Access token validated successfully for user: {}", username);
 
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
@@ -77,8 +77,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
-            logger.warn("JWT token has expired");
-            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token has expired");
+            logger.warn("JWT access token has expired");
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Access token has expired");
             return;
         } catch (MalformedJwtException e) {
             logger.warn("Malformed JWT token received");

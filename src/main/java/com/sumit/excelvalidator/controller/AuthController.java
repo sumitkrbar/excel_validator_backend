@@ -3,9 +3,11 @@ package com.sumit.excelvalidator.controller;
 import com.sumit.excelvalidator.entity.User;
 import com.sumit.excelvalidator.repository.UserRepository;
 import com.sumit.excelvalidator.service.JwtService;
+import com.sumit.excelvalidator.service.RefreshTokenService;
 import com.sumit.excelvalidator.dto.AuthResponse;
 import com.sumit.excelvalidator.dto.LoginRequest;
 import com.sumit.excelvalidator.dto.MessageResponse;
+import com.sumit.excelvalidator.dto.RefreshTokenRequest;
 import com.sumit.excelvalidator.dto.RegisterRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -39,6 +41,9 @@ public class AuthController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     @PostMapping("/register")
     public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
         logger.info("User registration attempt for email: {}", request.getEmail());
@@ -48,7 +53,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Email already registered"));
         }
-
 
         User user = new User();
         user.setName(request.getName());
@@ -71,8 +75,27 @@ public class AuthController {
                 )
         );
 
-        String token = jwtService.generateToken(request.getEmail());
+        String accessToken = jwtService.generateAccessToken(request.getEmail());
+        String refreshToken = refreshTokenService.createRefreshToken(request.getEmail());
+
         logger.info("User successfully logged in: {}", request.getEmail());
-        return ResponseEntity.ok(new AuthResponse(token));
+        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        logger.info("Refresh token request received");
+
+        try {
+            User user = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
+            String newAccessToken = jwtService.generateAccessToken(user.getEmail());
+
+            logger.info("Access token refreshed for user: {}", user.getEmail());
+            return ResponseEntity.ok(new AuthResponse(newAccessToken, request.getRefreshToken(), "Bearer", 900L));
+        } catch (Exception e) {
+            logger.warn("Refresh token verification failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Invalid or expired refresh token"));
+        }
     }
 }

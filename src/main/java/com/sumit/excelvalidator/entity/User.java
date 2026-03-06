@@ -3,6 +3,7 @@ package com.sumit.excelvalidator.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -22,4 +23,10 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String refreshToken;
+
+    @Column
+    private Date refreshTokenExpiryDate;
 }
